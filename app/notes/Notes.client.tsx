@@ -1,22 +1,24 @@
 'use client';
 
-import css from './notesPage.module.css';
 import { useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useDebouncedCallback } from 'use-debounce';
-
-import { NotesResponse } from '@/lib/api';
 import { fetchNotes } from '@/lib/api';
-
-import Pagination from '@/components/Pagination/Pagination';
 import NoteList from '@/components/NoteList/NoteList';
-import NoteForm from '@/components/NoteForm/NoteForm';
+import Pagination from '@/components/Pagination/Pagination';
 import Modal from '@/components/Modal/Modal';
+import NoteForm from '@/components/NoteForm/NoteForm';
 import SearchBox from '@/components/SearchBox/SearchBox';
-import Loader from '@/components/Loader/loader';
-import ErrorMessage from '@/components/ErrorMessage/ErrorMessage';
 
-export default function App() {
+import css from './notesPage.module.css';
+import type { Note } from '@/types/note';
+
+interface NotesClientProps {
+  initialNotes: Note[];
+  totalPages: number;
+}
+
+export default function Notes({ initialNotes, totalPages }: NotesClientProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
@@ -31,7 +33,7 @@ export default function App() {
     updateSearchQuery(value);
   };
 
-  const { data, isSuccess, isLoading, isError } = useQuery<NotesResponse>({
+  const { data, isSuccess } = useQuery({
     queryKey: ['notes', searchQuery, currentPage],
     queryFn: () =>
       fetchNotes({
@@ -39,9 +41,11 @@ export default function App() {
         search: searchQuery.trim() || undefined,
       }),
     placeholderData: keepPreviousData,
+    initialData: {
+      notes: initialNotes,
+      totalPages,
+    },
   });
-
-  const totalPages = data?.totalPages ?? 0;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
@@ -51,10 +55,10 @@ export default function App() {
     <div className={css.app}>
       <header className={css.toolbar}>
         <SearchBox value={searchInput} onSearch={handleSearch} />
-        {isSuccess && totalPages > 1 && (
+        {isSuccess && data.totalPages > 1 && (
           <Pagination
             page={currentPage}
-            total={totalPages}
+            total={data.totalPages}
             onChange={setCurrentPage}
           />
         )}
@@ -63,9 +67,8 @@ export default function App() {
         </button>
       </header>
 
-      {isLoading && <Loader />}
-      {isError && <ErrorMessage />}
       {isSuccess && data.notes.length > 0 && <NoteList notes={data.notes} />}
+
       {isModalOpen && (
         <Modal onClose={closeModal}>
           <NoteForm onSuccess={closeModal} onCancel={closeModal} />

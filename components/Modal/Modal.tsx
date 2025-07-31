@@ -1,6 +1,7 @@
-import css from "./Modal.module.css";
-import { createPortal } from "react-dom";
-import { useEffect } from "react";
+'use client';
+import css from './Modal.module.css';
+import { createPortal } from 'react-dom';
+import { useEffect } from 'react';
 
 interface NoteModalProps {
   onClose: () => void;
@@ -16,16 +17,16 @@ export default function Modal({ onClose, children }: NoteModalProps) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         onClose();
       }
     };
-    document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
+    document.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden';
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
     };
   }, [onClose]);
 
@@ -38,6 +39,6 @@ export default function Modal({ onClose, children }: NoteModalProps) {
     >
       <div className={css.modal}>{children}</div>
     </div>,
-    document.getElementById("modal-root") as HTMLDivElement
+    document.getElementById('modal-root') as HTMLDivElement,
   );
 }
