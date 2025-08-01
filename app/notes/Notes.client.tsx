@@ -10,10 +10,16 @@ import Pagination from '@/components/Pagination/Pagination';
 import Modal from '@/components/Modal/Modal';
 import NoteForm from '@/components/NoteForm/NoteForm';
 import SearchBox from '@/components/SearchBox/SearchBox';
+import { Note } from '@/types/note';
 
 import css from './notesPage.module.css';
 
-export default function Notes() {
+interface NotesProps {
+  notes: Note[];
+  totalPages: number;
+}
+
+export default function Notes({ notes, totalPages }: NotesProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
@@ -36,9 +42,11 @@ export default function Notes() {
         search: searchQuery.trim() || undefined,
       }),
     placeholderData: keepPreviousData,
+    initialData: {
+      notes,
+      totalPages,
+    },
   });
-
-  const totalPages = data?.totalPages ?? 0;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
