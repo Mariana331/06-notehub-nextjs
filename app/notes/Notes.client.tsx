@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useDebouncedCallback } from 'use-debounce';
 import { fetchNotes } from '@/lib/api';
+import { Note } from '@/types/note';
 
 import NoteList from '@/components/NoteList/NoteList';
 import Pagination from '@/components/Pagination/Pagination';
 import Modal from '@/components/Modal/Modal';
 import NoteForm from '@/components/NoteForm/NoteForm';
 import SearchBox from '@/components/SearchBox/SearchBox';
-import { Note } from '@/types/note';
 
 import css from './notesPage.module.css';
 
@@ -42,11 +42,10 @@ export default function Notes({ notes, totalPages }: NotesProps) {
         search: searchQuery.trim() || undefined,
       }),
     placeholderData: keepPreviousData,
-    initialData: {
-      notes,
-      totalPages,
-    },
+    initialData: { notes, totalPages },
   });
+
+  const totalPagesFromData = data?.totalPages ?? 0;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
@@ -56,10 +55,10 @@ export default function Notes({ notes, totalPages }: NotesProps) {
     <div className={css.app}>
       <header className={css.toolbar}>
         <SearchBox value={searchInput} onSearch={handleSearch} />
-        {isSuccess && totalPages > 1 && (
+        {isSuccess && totalPagesFromData > 1 && (
           <Pagination
             page={currentPage}
-            total={totalPages}
+            total={totalPagesFromData}
             onChange={setCurrentPage}
           />
         )}
@@ -67,7 +66,11 @@ export default function Notes({ notes, totalPages }: NotesProps) {
           Create note +
         </button>
       </header>
-      {isSuccess && data.notes.length > 0 && <NoteList notes={data.notes} />}
+      {isSuccess && data?.notes.length > 0 ? (
+        <NoteList notes={data.notes} />
+      ) : (
+        isSuccess && <p className={css.nothing}>No notes found.</p>
+      )}
       {isModalOpen && (
         <Modal onClose={closeModal}>
           <NoteForm onSuccess={closeModal} onCancel={closeModal} />
